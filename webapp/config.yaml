@@ -9,7 +9,7 @@
 # ============================================================
 supabase:
   url: "https://hwysxtiaokqqvdzrssng.supabase.co"
-  anonKey: "YOUR_ANON_PUBLIC_KEY"
+  anonKey: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh3eXN4dGlhb2txcXZkenJzc25nIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI1NzMxMzIsImV4cCI6MjA5ODE0OTEzMn0.I2AWL_nmhW0uChf8hairr63p9Jg-84OvgUT9A3pXuF4"
   # admin logs in with just a code; we sign in as this fixed account
   # using the code as the password.
   adminEmail: "admin@jamminjunction.app"

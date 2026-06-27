@@ -13,20 +13,24 @@
   <!-- ===== LOGIN ===== -->
   <div id="login" class="login">
     <form id="loginForm" class="login-card">
+      <div class="login-logo"><img src="../assets/brand/logo.jpg" alt="Jammin Junction" /></div>
       <h1>JAMMIN JUNCTION</h1>
-      <p class="sub">Menu Admin</p>
-      <input id="codeInput" type="password" placeholder="Enter admin code" autocomplete="current-password" />
-      <button type="submit" id="loginBtn">Unlock</button>
+      <p class="sub">MENU ADMIN</p>
+      <div class="field">
+        <input id="codeInput" type="password" placeholder="Enter admin code" autocomplete="current-password" />
+      </div>
+      <button type="submit" id="loginBtn">Unlock Dashboard</button>
       <p id="loginMsg" class="msg"></p>
-      <p id="cfgWarn" class="cfg-warn hidden">⚠ Supabase isn't configured yet — edit <code>admin/config.js</code> and run the SQL in <code>admin/supabase/</code>. See <code>admin/SETUP.md</code>.</p>
+      <p id="cfgWarn" class="cfg-warn hidden">⚠ Supabase isn't configured yet — add your anon key to <code>config.yaml</code> and run the SQL in <code>admin/supabase/</code>. See <code>admin/SETUP.md</code>.</p>
     </form>
+    <p class="login-foot">Restaurant menu management · Authorized staff only</p>
   </div>
 
   <!-- ===== ADMIN APP ===== -->
   <div id="app" class="app hidden">
     <header class="bar">
       <div class="bar-l">
-        <strong>Menu Admin</strong>
+        <div class="brand"><img src="../assets/brand/logo.jpg" alt=""/><div><strong>JAMMIN JUNCTION</strong><span>Menu Admin</span></div></div>
         <select id="menuSel">
           <option value="regular">Regular Menu</option>
           <option value="happy">Happy Hours</option>
@@ -34,7 +38,7 @@
       </div>
       <div class="bar-r">
         <span id="saveState" class="save-state"></span>
-        <a href="../index.html" target="_blank" class="link">View site ↗</a>
+        <a href="../index.html" target="_blank" class="link">View live site ↗</a>
         <button id="logoutBtn" class="ghost">Log out</button>
       </div>
     </header>

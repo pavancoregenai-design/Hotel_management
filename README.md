@@ -16,7 +16,7 @@ A mobile-first digital menu web app for **JAMMIN JUNCTION BAR & KITCHEN, Hyderab
 - **Polish** — gold theme, scroll-reveal, shimmer/glow effects, hover lift, responsive down to 320px, `prefers-reduced-motion` aware.
 
 ## 🗂 Structure
-
+https://api.vercel.com/v1/integrations/deploy/prj_4kKHmLHPzu1Oei8MCjxOLHzIcxrf/i7wxk0IxAL
 ```
 webapp/
   index.html        # app shell (home + explore screen)
