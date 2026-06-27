@@ -1,18 +1,33 @@
 // ============================================================
-//  Supabase connection — used by BOTH the public menu and admin
-//  Fill these in after creating your Supabase project.
-//  (Settings → API → Project URL and "anon public" key)
-//
-//  These are safe to expose publicly (the anon key only allows
-//  what Row-Level-Security permits: public read, admin-only write).
+//  Config loader — reads Supabase settings from config.yaml
+//  (the single source of truth). Requires js-yaml to be loaded.
+//  Exposes window.loadConfig() -> Promise<config>, and sets
+//  window.SUPABASE_CONFIG + window.SUPABASE_READY.
 // ============================================================
-window.SUPABASE_CONFIG = {
-  url:        'https://hwysxtiaokqqvdzrssng.supabase.co',
-  anonKey:    'YOUR_ANON_PUBLIC_KEY',
-  // the admin logs in with just a code; behind the scenes we sign in
-  // as this fixed account using the code as the password.
-  adminEmail: 'admin@jamminjunction.app',
-};
+(function () {
+  // config.yaml lives at the site root (works for both / and /admin/)
+  const CONFIG_URL = (location.pathname.indexOf('/admin') === 0 ? '../' : './') + 'config.yaml';
 
-// true once real values are filled in
-window.SUPABASE_READY = !/YOUR_/.test(window.SUPABASE_CONFIG.url + window.SUPABASE_CONFIG.anonKey);
+  window.loadConfig = async function () {
+    if (window.__cfgLoaded) return window.SUPABASE_CONFIG;
+    let cfg = { url: '', anonKey: '', adminEmail: 'admin@jamminjunction.app' };
+    try {
+      const res = await fetch(CONFIG_URL, { cache: 'no-store' });
+      if (res.ok && window.jsyaml) {
+        const y = window.jsyaml.load(await res.text()) || {};
+        const s = y.supabase || {};
+        cfg = {
+          url: (s.url || '').trim(),
+          anonKey: (s.anonKey || '').trim(),
+          adminEmail: (s.adminEmail || cfg.adminEmail).trim(),
+        };
+      }
+    } catch (e) {
+      console.warn('Could not load config.yaml', e);
+    }
+    window.SUPABASE_CONFIG = cfg;
+    window.SUPABASE_READY = !!(cfg.url && cfg.anonKey && !/YOUR_/.test(cfg.url + cfg.anonKey));
+    window.__cfgLoaded = true;
+    return cfg;
+  };
+})();

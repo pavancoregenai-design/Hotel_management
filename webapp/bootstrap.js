@@ -2,6 +2,7 @@
 // Falls back silently to the bundled data.js when Supabase isn't set up.
 (async function () {
   try {
+    if (typeof window.loadConfig === 'function') await window.loadConfig();
     if (window.SUPABASE_READY && typeof window.buildMenuFromSupabase === 'function') {
       const data = await window.buildMenuFromSupabase();
       if (data && data.menus) window.MENU_DATA = data;

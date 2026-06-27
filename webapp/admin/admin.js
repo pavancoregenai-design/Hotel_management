@@ -1,4 +1,5 @@
-(function () {
+(async function () {
+  await window.loadConfig();
   const cfg = window.SUPABASE_CONFIG || {};
   const ready = window.SUPABASE_READY;
   let sb = null;

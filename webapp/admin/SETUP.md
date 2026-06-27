@@ -27,15 +27,18 @@ The admin panel and the live menu are powered by **Supabase** (free tier). Follo
 
 > Want a different login email? Change `adminEmail` in `admin/config.js` to match.
 
-## 5. Paste your keys into the app
+## 5. Paste your keys into `config.yaml`
+All settings live in one file: **`webapp/config.yaml`**.
 1. Supabase → **Project Settings** (gear) → **API**.
-2. Copy **Project URL** and the **`anon` `public`** key.
-3. Open `admin/config.js` and replace:
-   ```js
-   url:     'https://YOUR_PROJECT_REF.supabase.co',   // ← Project URL
-   anonKey: 'YOUR_ANON_PUBLIC_KEY',                   // ← anon public key
+2. Copy the **`anon` `public`** key (the Project URL is already filled in).
+3. Open `webapp/config.yaml` and set:
+   ```yaml
+   supabase:
+     url: "https://hwysxtiaokqqvdzrssng.supabase.co"
+     anonKey: "PASTE_YOUR_ANON_PUBLIC_KEY_HERE"
+     adminEmail: "admin@jamminjunction.app"
    ```
-4. Save.
+4. Save. (This single file is read by both the public menu and the admin panel.)
 
 ## 6. Deploy
 ```bash

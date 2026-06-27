@@ -1,0 +1,15 @@
+# ============================================================
+#  JAMMIN JUNCTION — app configuration (single source of truth)
+#  Used by both the public menu and the admin panel.
+#  Paste your Supabase anon key below, then save.
+#  (Supabase dashboard → Project Settings → API)
+#
+#  Safe to commit: the anon key only allows what Row-Level-Security
+#  permits — public READ of the menu, admin-only WRITE.
+# ============================================================
+supabase:
+  url: "https://hwysxtiaokqqvdzrssng.supabase.co"
+  anonKey: "YOUR_ANON_PUBLIC_KEY"
+  # admin logs in with just a code; we sign in as this fixed account
+  # using the code as the password.
+  adminEmail: "admin@jamminjunction.app"
