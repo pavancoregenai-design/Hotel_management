@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>JAMMIN JUNCTION — Menu Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&family=Sofia+Sans+Condensed:wght@500;600;700;800&family=Dela+Gothic+One&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="admin.css" />
+</head>
+<body>
+
+  <!-- ===== LOGIN ===== -->
+  <div id="login" class="login">
+    <form id="loginForm" class="login-card">
+      <h1>JAMMIN JUNCTION</h1>
+      <p class="sub">Menu Admin</p>
+      <input id="codeInput" type="password" placeholder="Enter admin code" autocomplete="current-password" />
+      <button type="submit" id="loginBtn">Unlock</button>
+      <p id="loginMsg" class="msg"></p>
+      <p id="cfgWarn" class="cfg-warn hidden">⚠ Supabase isn't configured yet — edit <code>admin/config.js</code> and run the SQL in <code>admin/supabase/</code>. See <code>admin/SETUP.md</code>.</p>
+    </form>
+  </div>
+
+  <!-- ===== ADMIN APP ===== -->
+  <div id="app" class="app hidden">
+    <header class="bar">
+      <div class="bar-l">
+        <strong>Menu Admin</strong>
+        <select id="menuSel">
+          <option value="regular">Regular Menu</option>
+          <option value="happy">Happy Hours</option>
+        </select>
+      </div>
+      <div class="bar-r">
+        <span id="saveState" class="save-state"></span>
+        <a href="../index.html" target="_blank" class="link">View site ↗</a>
+        <button id="logoutBtn" class="ghost">Log out</button>
+      </div>
+    </header>
+
+    <div class="layout">
+      <!-- left: categories + sub-categories -->
+      <aside class="side">
+        <div class="side-head">
+          <span>Categories</span>
+          <button id="addCatBtn" class="mini" title="Add category">+ Cat</button>
+        </div>
+        <div id="catList" class="cat-list"></div>
+      </aside>
+
+      <!-- main: items of selected sub-category -->
+      <main class="main">
+        <div id="secBar" class="sec-bar"></div>
+        <div id="itemArea" class="item-area">
+          <p class="hint">Select a category and sub-category on the left to edit its items.</p>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
+  <script src="admin.js"></script>
+</body>
+</html>
