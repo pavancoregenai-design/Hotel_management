@@ -5,8 +5,11 @@
 //  window.SUPABASE_CONFIG + window.SUPABASE_READY.
 // ============================================================
 (function () {
-  // config.yaml lives at the site root (works for both / and /admin/)
-  const CONFIG_URL = (location.pathname.indexOf('/admin') === 0 ? '../' : './') + 'config.yaml';
+  // config.yaml lives one level above the admin folder (and next to the public index).
+  // Using "../" whenever we're inside /admin works whether the site is served at
+  // the domain root (/admin/) or a sub-path (/webapp/admin/).
+  const inAdmin = location.pathname.includes('/admin');
+  const CONFIG_URL = (inAdmin ? '../' : './') + 'config.yaml';
 
   window.loadConfig = async function () {
     if (window.__cfgLoaded) return window.SUPABASE_CONFIG;
