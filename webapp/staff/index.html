@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>JAMMIN JUNCTION — Staff Orders</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&family=Sofia+Sans+Condensed:wght@500;600;700;800&family=Dela+Gothic+One&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="staff.css" />
+</head>
+<body>
+
+  <!-- LOGIN -->
+  <div id="login" class="login">
+    <form id="loginForm" class="login-card">
+      <div class="login-logo"><img src="../assets/brand/logo.jpg" alt="" /></div>
+      <h1>JAMMIN JUNCTION</h1>
+      <p class="sub">STAFF · ORDERS</p>
+      <input id="email" type="email" placeholder="Staff email" autocomplete="username" />
+      <input id="code" type="password" placeholder="Password" autocomplete="current-password" />
+      <button type="submit" id="loginBtn">Sign in</button>
+      <p id="loginMsg" class="msg"></p>
+      <p id="cfgWarn" class="cfg-warn hidden">⚠ Backend not configured — run <code>admin/supabase/orders.sql</code> and add staff users. See <code>staff/SETUP.md</code>.</p>
+    </form>
+  </div>
+
+  <!-- BOARD -->
+  <div id="app" class="app hidden">
+    <header class="bar">
+      <div class="bar-l">
+        <div class="brand"><img src="../assets/brand/logo.jpg" alt=""/><div><strong>ORDER BOARD</strong><span id="roleBadge">staff</span></div></div>
+      </div>
+      <div class="bar-r">
+        <span id="liveDot" class="live">● live</span>
+        <button id="soundBtn" class="ghost" title="Toggle sound">🔔 Sound: On</button>
+        <button id="logoutBtn" class="ghost">Log out</button>
+      </div>
+    </header>
+
+    <div class="board" id="board">
+      <section class="lane" data-status="placed">   <div class="lane-h"><h3>New</h3><span class="cnt" id="cnt-placed">0</span></div>       <div class="lane-body" id="lane-placed"></div></section>
+      <section class="lane" data-status="preparing"><div class="lane-h"><h3>Preparing</h3><span class="cnt" id="cnt-preparing">0</span></div><div class="lane-body" id="lane-preparing"></div></section>
+      <section class="lane" data-status="ready">    <div class="lane-h"><h3>Ready</h3><span class="cnt" id="cnt-ready">0</span></div>     <div class="lane-body" id="lane-ready"></div></section>
+      <section class="lane" data-status="served">   <div class="lane-h"><h3>Served</h3><span class="cnt" id="cnt-served">0</span></div>    <div class="lane-body" id="lane-served"></div></section>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/js-yaml@4/dist/js-yaml.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="../admin/config.js"></script>
+  <script src="staff.js"></script>
+</body>
+</html>

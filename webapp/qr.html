@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Table QR Codes — JAMMIN JUNCTION</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;600;700&family=Dela+Gothic+One&display=swap" rel="stylesheet" />
+  <style>
+    :root{--gold:#e8b86b}
+    *{box-sizing:border-box}
+    body{margin:0;background:#0d0d0d;color:#fff;font-family:'Roboto',system-ui,Arial,sans-serif}
+    .top{display:flex;align-items:center;justify-content:space-between;padding:16px 22px;border-bottom:1px solid #2c2c2c;flex-wrap:wrap;gap:10px}
+    .top h1{font-family:'Dela Gothic One',sans-serif;font-size:16px;margin:0}
+    .top p{margin:2px 0 0;color:var(--gold);font-size:12px;letter-spacing:1px}
+    .btn{background:linear-gradient(135deg,var(--gold),#caa14e);color:#1a1206;border:none;border-radius:10px;padding:11px 18px;font-weight:700;cursor:pointer}
+    .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:18px;padding:22px}
+    .qcard{background:#fff;color:#111;border-radius:16px;padding:20px 16px;text-align:center;break-inside:avoid}
+    .qcard .brand{font-family:'Dela Gothic One',sans-serif;font-size:13px;letter-spacing:.5px}
+    .qcard .tno{font-size:30px;font-weight:800;margin:2px 0 12px}
+    .qcard canvas{width:190px !important;height:190px !important}
+    .qcard .hint{font-size:12px;color:#444;margin-top:12px;font-weight:600}
+    .qcard .url{font-size:9px;color:#999;margin-top:6px;word-break:break-all}
+    .msg{padding:40px 22px;color:#9d9d9d}
+    @media print{
+      body{background:#fff}
+      .top{display:none}
+      .grid{padding:0}
+      .qcard{border:1px solid #ddd;box-shadow:none;margin:6px}
+    }
+  </style>
+</head>
+<body>
+  <div class="top">
+    <div><h1>TABLE QR CODES</h1><p>Scan → opens the menu for that table</p></div>
+    <button class="btn" onclick="window.print()">🖨 Print all</button>
+  </div>
+  <div id="grid" class="grid"></div>
+  <div id="msg" class="msg">Loading tables…</div>
+
+  <script src="https://cdn.jsdelivr.net/npm/js-yaml@4/dist/js-yaml.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+  <script src="admin/config.js"></script>
+  <script>
+    (async function () {
+      await window.loadConfig();
+      const msg = document.getElementById('msg');
+      if (!window.SUPABASE_READY) { msg.textContent = 'Backend not configured — see admin/SETUP.md.'; return; }
+      const sb = window.supabase.createClient(window.SUPABASE_CONFIG.url, window.SUPABASE_CONFIG.anonKey);
+      // site root = folder containing qr.html
+      const base = location.href.replace(/qr\.html.*$/, '').replace(/[?#].*$/, '');
+      const { data: tables, error } = await sb.from('tables').select('table_number,qr_token').order('table_number');
+      if (error) { msg.textContent = 'Error: ' + error.message; return; }
+      if (!tables || !tables.length) { msg.textContent = 'No tables yet — run admin/supabase/orders.sql to seed them.'; return; }
+      msg.style.display = 'none';
+      const grid = document.getElementById('grid');
+      tables.forEach((t) => {
+        const url = base + '?t=' + t.qr_token;
+        const card = document.createElement('div');
+        card.className = 'qcard';
+        card.innerHTML = `<div class="brand">JAMMIN JUNCTION</div><div class="tno">TABLE ${t.table_number}</div>
+          <canvas></canvas><div class="hint">Scan to view menu &amp; order</div><div class="url">${url}</div>`;
+        grid.appendChild(card);
+        QRCode.toCanvas(card.querySelector('canvas'), url, { width: 190, margin: 1 });
+      });
+    })();
+  </script>
+</body>
+</html>

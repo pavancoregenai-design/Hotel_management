@@ -248,10 +248,15 @@
 
   function itemRow(it) {
     const q = it.qty && Object.keys(it.qty).length;
+    const ord = window.ORDERING;
+    const escA = (s) => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+    const addBtn = (variant, price) => ord
+      ? `<button class="add-btn" data-n="${escA(it.name)}" data-t="${it.type}" data-v="${escA(variant)}" data-p="${price}" aria-label="Add to cart">+</button>`
+      : '';
     const priceHtml = q
       ? `<div class="price-variants">${Object.entries(it.qty)
-          .map(([k, v]) => `<span class="item-price">₹${v} <small>${k}</small></span>`).join('')}</div>`
-      : `<div class="item-price">₹${it.price}</div>`;
+          .map(([k, v]) => `<span class="item-price">₹${v} <small>${k}</small>${addBtn(k, v)}</span>`).join('')}</div>`
+      : `<div class="item-price">₹${it.price}${addBtn('', it.price)}</div>`;
     return `
       <div class="item">
         <span class="sym ${dietClass(it.type)}"></span>
