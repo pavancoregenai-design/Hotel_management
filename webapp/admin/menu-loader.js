@@ -46,6 +46,7 @@
           items: items
             .filter((it) => it.menu_type === mk && it.category === catSec.category && it.sub_category === subSec.sub_category)
             .map((it) => ({
+              id: it.id,
               name: it.name,
               type: it.item_type,
               price: it.price == null ? '' : String(it.price),

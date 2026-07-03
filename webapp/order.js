@@ -47,21 +47,24 @@
     // add-to-cart (event delegation — items render later)
     document.body.addEventListener('click', (e) => {
       const b = e.target.closest('.add-btn'); if (!b) return;
-      addToCart({ name: b.dataset.n, type: b.dataset.t, variant: b.dataset.v, price: Number(b.dataset.p) });
+      addToCart({ id: b.dataset.id, name: b.dataset.n, type: b.dataset.t, variant: b.dataset.v, price: Number(b.dataset.p) });
       bump(b);
     });
     renderFab();
     resolveTable();
   }
 
-  // ---------- table resolve ----------
+  // ---------- table resolve (via secure RPC — no direct table access) ----------
   async function resolveTable() {
     try {
       if (window.loadConfig) await window.loadConfig();
       const sb = window.getSupabase && window.getSupabase();
       if (!sb) return;
-      const { data } = await sb.from('tables').select('id,table_number,hotel_id').eq('qr_token', token).single();
-      if (data) { table = data; document.getElementById('tblName').textContent = 'Table ' + data.table_number; }
+      const { data } = await sb.rpc('resolve_table', { p_token: token });
+      if (data && data.table_number) {
+        table = { table_number: data.table_number };
+        document.getElementById('tblName').textContent = 'Table ' + data.table_number;
+      }
     } catch (e) { console.warn('table resolve failed', e); }
   }
 
@@ -113,62 +116,64 @@
   function openSheet() { renderSheet(); scrim.classList.add('show'); sheet.classList.add('show'); renderFab(); }
   function closeSheet() { scrim.classList.remove('show'); sheet.classList.remove('show'); renderFab(); }
 
-  // ---------- place order ----------
+  // ---------- place order (server-authoritative RPC: DB recomputes prices) ----------
+  const ERRMAP = { invalid_table: 'This QR is not linked to a table.', empty_order: 'Your cart is empty.',
+    no_valid_items: 'These items are no longer available.', too_many_items: 'Too many items in one order.' };
   async function placeOrder() {
     if (!cart.length) return;
     const sb = window.getSupabase && window.getSupabase();
-    if (!sb || !table) { toast('Connecting… please try again', true); resolveTable(); return; }
+    if (!sb) { toast('Connecting… please try again', true); return; }
     const btn = document.getElementById('placeBtn'); btn.disabled = true;
     btn.querySelector('span').textContent = 'Placing…';
     try {
-      const { data: order, error } = await sb.from('orders').insert({
-        hotel_id: table.hotel_id, table_id: table.id, table_number: table.table_number,
-        customer_name: document.getElementById('custName').value.trim() || null,
-        note: document.getElementById('custNote').value.trim() || null,
-        total: total(), status: 'placed',
-      }).select().single();
+      const { data, error } = await sb.rpc('place_order', {
+        p_table_token: token,
+        p_items: cart.map((l) => ({ item_id: l.id, variant: l.variant || null, qty: l.qty })),
+        p_name: document.getElementById('custName').value.trim() || null,
+        p_note: document.getElementById('custNote').value.trim() || null,
+      });
       if (error) throw error;
-      const rows = cart.map((l) => ({
-        order_id: order.id, name: l.name, variant: l.variant || null, item_type: l.type,
-        unit_price: l.price, qty: l.qty, line_total: l.price * l.qty,
-      }));
-      const { error: e2 } = await sb.from('order_items').insert(rows);
-      if (e2) throw e2;
       cart = []; save(); renderFab(); closeSheet();
-      trackOrder(order.id, order.table_number);
+      trackOrder(data.track_token, data.table_number || (table && table.table_number) || '');
     } catch (e) {
-      toast('Could not place order: ' + (e.message || e), true);
+      const msg = ERRMAP[(e.message || '').trim()] || ('Could not place order: ' + (e.message || e));
+      toast(msg, true);
       btn.disabled = false; btn.querySelector('span').textContent = 'Place Order';
     }
   }
 
-  // ---------- live status ----------
+  // ---------- live status (secure polling via get_order RPC) ----------
   const STEPS = [['placed', 'Placed'], ['preparing', 'Preparing'], ['ready', 'Ready'], ['served', 'Served']];
-  function trackOrder(id, tno) {
+  function trackOrder(trackToken, tno) {
     const scr = document.getElementById('statusScrim');
-    render('placed');
-    scr.classList.add('show');
     const sb = window.getSupabase();
-    const ch = sb.channel('order-' + id)
-      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'orders', filter: `id=eq.${id}` },
-        (p) => render(p.new.status))
-      .subscribe();
+    let status = 'placed', poll = null;
+    scr.classList.add('show');
+    render(status);
+    const tick = async () => {
+      try {
+        const { data } = await sb.rpc('get_order', { p_track_token: trackToken });
+        if (data && data.status && data.status !== status) {
+          status = data.status; render(status);
+          if (status === 'served' || status === 'cancelled') stop();
+        }
+      } catch (e) { /* keep trying */ }
+    };
+    poll = setInterval(tick, 5000);
+    const stop = () => { if (poll) { clearInterval(poll); poll = null; } };
 
-    function render(status) {
-      const idx = STEPS.findIndex((s) => s[0] === status);
-      const done = status === 'served';
+    function render(st) {
+      const idx = STEPS.findIndex((s) => s[0] === st);
+      const done = st === 'served', cancelled = st === 'cancelled';
       document.getElementById('statusCard').innerHTML = `
-        <div class="tick">${done ? '🎉' : '✓'}</div>
-        <h2>${done ? 'Enjoy your meal!' : 'Order placed!'}</h2>
-        <div class="osub">Table ${tno} · we'll bring it over${done ? '' : ' shortly'}</div>
-        <div class="steps">${STEPS.map((s, i) => `
+        <div class="tick">${cancelled ? '⚠' : done ? '🎉' : '✓'}</div>
+        <h2>${cancelled ? 'Order cancelled' : done ? 'Enjoy your meal!' : 'Order placed!'}</h2>
+        <div class="osub">Table ${tno} · ${cancelled ? 'please check with staff' : done ? 'served to your table' : "we'll bring it over shortly"}</div>
+        ${cancelled ? '' : `<div class="steps">${STEPS.map((s, i) => `
           <div class="step ${i < idx ? 'done' : ''} ${i === idx ? 'active' : ''}">
-            <div class="dot">${i <= idx ? '✓' : i + 1}</div><small>${s[1]}</small></div>`).join('')}</div>
-        <button class="obtn" id="statusClose">${done ? 'Done' : 'Keep browsing'}</button>
-        <div class="oid">ORDER #${id.slice(0, 8).toUpperCase()}</div>`;
-      document.getElementById('statusClose').onclick = () => {
-        scr.classList.remove('show'); if (done) sb.removeChannel(ch);
-      };
+            <div class="dot">${i <= idx ? '✓' : i + 1}</div><small>${s[1]}</small></div>`).join('')}</div>`}
+        <button class="obtn" id="statusClose">${done || cancelled ? 'Done' : 'Keep browsing'}</button>`;
+      document.getElementById('statusClose').onclick = () => { scr.classList.remove('show'); if (done || cancelled) stop(); };
     }
   }
 

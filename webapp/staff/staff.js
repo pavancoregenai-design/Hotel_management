@@ -76,7 +76,12 @@
           await fetchOne(p.new.id); renderAll();
           if (p.new.status === 'ready' && (!prev || prev.status !== 'ready')) alertReady();
         })
-      .subscribe((s) => { $('#liveDot').style.opacity = s === 'SUBSCRIBED' ? 1 : .3; });
+      .subscribe((s) => {
+        const on = s === 'SUBSCRIBED';
+        $('#liveDot').style.opacity = on ? 1 : .3;
+        $('#liveDot').textContent = on ? '● live' : '● reconnecting';
+        if (on) loadOrders(); // resync on (re)connect so no order is missed
+      });
   }
 
   // ---------- render ----------
